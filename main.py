@@ -24,6 +24,7 @@ def convert_to_docx(pdf_file, docx_file):
     try:
         cv = Converter(pdf_file)
         cv.convert(docx_file)
+        # cv.convert(docx_file, multi_processing=True)
         cv.close()
         print(f"Successfully created {docx_file}")
     except Exception as e:
