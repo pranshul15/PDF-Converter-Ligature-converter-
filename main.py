@@ -7,20 +7,38 @@ from docx import Document
 
 def rebuild_pdf(input_file, output_file):
     print(f"--- Step 1: Rebuilding {input_file} with Ghostscript ---")
-    args = [
-        "gs", 
-        "-dNOPAUSE", "-dBATCH", "-dSAFER",
-        "-sDEVICE=pdfwrite",
-        f"-sOutputFile={output_file}",
-        input_file
-    ]
-    try:
-        subprocess.run(args, check=True)
-        print("PDF rebuilt successfully.")
-        return True
-    except subprocess.CalledProcessError as e:
-        print(f"Error during Ghostscript execution: {e}")
-        return False
+    
+    # Common Ghostscript executable names
+    gs_cmds = ["gs", "gswin64c", "gswin32c"]
+    
+    for cmd in gs_cmds:
+        args = [
+            cmd, 
+            "-dNOPAUSE", "-dBATCH", "-dSAFER",
+            "-sDEVICE=pdfwrite",
+            f"-sOutputFile={output_file}",
+            input_file
+        ]
+        try:
+            # We use subprocess.run and catch FileNotFoundError if the command isn't found
+            subprocess.run(args, check=True, capture_output=True, text=True)
+            print("PDF rebuilt successfully.")
+            return True
+        except FileNotFoundError:
+            # This command wasn't found, try the next one
+            continue
+        except subprocess.CalledProcessError as e:
+            print(f"Error during Ghostscript execution ({cmd}):")
+            print(e.stderr)
+            return False
+
+    # If we loop through all and none work
+    print("\n[!] Error: Ghostscript not found.")
+    print("Ghostscript is required to 'rebuild' the PDF and fix ligature issues.")
+    print("1. Install Ghostscript: https://ghostscript.com/releases/gsdnld.html")
+    print("2. Ensure 'gs' or 'gswin64c' is in your system PATH.")
+    print("3. Alternatively, run this tool via Docker (recommended).")
+    return False
 
 def convert_to_docx(pdf_file, docx_file):
     print(f"--- Step 2: Converting {pdf_file} to Word ---")
