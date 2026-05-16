@@ -1,5 +1,7 @@
 import subprocess
 import os
+import argparse
+from pathlib import Path
 from pdf2docx import Converter
 from docx import Document
 
@@ -53,17 +55,26 @@ def remove_section_breaks_with_space(docx_file):
         print(f"Error removing section breaks: {e}")
 
 if __name__ == "__main__":
-    input_pdf = "book.pdf"
-    rebuilt_pdf = "book_rebuilt.pdf"
-    output_docx = "book_final.docx"
+    parser = argparse.ArgumentParser(description="Convert PDF to DOCX with ligature and section break fixes.")
+    parser.add_argument("-i", "--input", default="book.pdf", help="Input PDF filename (default: book.pdf)")
+    parser.add_argument("-o", "--output", help="Output DOCX filename (default: [input]_final.docx)")
+    
+    args = parser.parse_args()
+    
+    input_path = Path(args.input)
+    if not input_path.exists():
+        print(f"Error: {input_path} not found in the directory.")
+        exit(1)
 
-    if os.path.exists(input_pdf):
-        # Run Sequence
-        if rebuild_pdf(input_pdf, rebuilt_pdf):
-            if convert_to_docx(rebuilt_pdf, output_docx):
-                remove_section_breaks_with_space(output_docx)
-                # Optional: Clean up intermediate rebuilt PDF
-                if os.path.exists(rebuilt_pdf):
-                    os.remove(rebuilt_pdf)
-    else:
-        print(f"Error: {input_pdf} not found in the directory.")
+    # Derive filenames
+    input_stem = input_path.stem
+    rebuilt_pdf = f"{input_stem}_rebuilt.pdf"
+    output_docx = args.output if args.output else f"{input_stem}_final.docx"
+
+    # Run Sequence
+    if rebuild_pdf(str(input_path), rebuilt_pdf):
+        if convert_to_docx(rebuilt_pdf, output_docx):
+            remove_section_breaks_with_space(output_docx)
+            # Optional: Clean up intermediate rebuilt PDF
+            if os.path.exists(rebuilt_pdf):
+                os.remove(rebuilt_pdf)
