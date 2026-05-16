@@ -20,4 +20,4 @@ RUN pip install --no-cache-dir pdf2docx python-docx
 COPY main.py .
 
 # Command to run the script
-CMD ["python", "main.py"]
+ENTRYPOINT ["python", "main.py"]
