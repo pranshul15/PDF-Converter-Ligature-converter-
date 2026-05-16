@@ -14,7 +14,7 @@ RUN apt-get update --fix-missing && \
 WORKDIR /app
 
 # Install Python dependencies
-RUN pip install --no-cache-dir pdf2docx
+RUN pip install --no-cache-dir pdf2docx python-docx
 
 # Copy your script into the container
 COPY main.py .
